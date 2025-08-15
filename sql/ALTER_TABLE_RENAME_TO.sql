@@ -1,0 +1,2 @@
+ALTER TABLE celigo_netsuite.retail_transfer_orders___
+RENAME TO retail_transfer_orders
