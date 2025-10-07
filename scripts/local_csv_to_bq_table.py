@@ -104,8 +104,6 @@ source_schema_dict
 #     ,'amount'                   : 'NUMERIC'
 # }
 
-source_schema_dict['cancel_at'] = 'DATE'
-
 new_schema_dict = new_schema_dict if 'new_schema_dict' in locals() else source_schema_dict
 
 new_schema = [SchemaField(name=name, field_type=type, mode='NULLABLE') for name, type in new_schema_dict.items()]
@@ -185,26 +183,20 @@ print("Adding and populating 'ingested_at' column with CURRENT_TIMESTAMP()...")
 # SQL to add the new column
 add_column_sql = f"""
     ALTER TABLE `{PROJECT_ID}.{DATASET_ID}.{NEW_TABLE_ID}`
-    ADD COLUMN ingested_at TIMESTAMP
-    """
+    ADD COLUMN ingested_at TIMESTAMP;
 
-# SQL to update the new column with the current timestamp
-update_column_sql = f"""
+    ALTER TABLE `{PROJECT_ID}.{DATASET_ID}.{NEW_TABLE_ID}`
+    ALTER COLUMN ingested_at SET DEFAULT CURRENT_TIMESTAMP();
+
     UPDATE `{PROJECT_ID}.{DATASET_ID}.{NEW_TABLE_ID}`
     SET ingested_at = CURRENT_TIMESTAMP()
-    WHERE TRUE
+    WHERE TRUE;
     """
 
 try:
-    # First, add the new column
     query_job = client.query(add_column_sql)
     query_job.result()
     print("Successfully added the 'ingested_at' column.")
-    
-    # Second, update the new column
-    query_job = client.query(update_column_sql)
-    query_job.result()
-    print(f"Successfully updated {query_job.num_dml_affected_rows} rows in the 'ingested_at' column.")
 except Exception as e:
     print(f"Error adding or updating 'ingested_at' column: {e}")
 
